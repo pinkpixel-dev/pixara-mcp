@@ -2,7 +2,7 @@
 
 An MCP server that gives LLMs direct access to OpenRouter's Image API to generate images, edit/transform existing ones, and browse the model catalog, all through 4 tools.
 
-I built this because I saw that OpenRouter announced a new Image API (`/api/v1/images`) that gives you one endpoint to use FLUX, GPT Image, Imagen, Stable Diffusion, Recraft, Ideogram, Midjourney, and more. I didn't see an MCP server for it so I decided to make one, and here it is.
+I built this because I saw that OpenRouter announced a new Image API (`/api/v1/images`) that gives you one endpoint to use image generation and image editing models like GPT Image, Nano Banana, Flux, Recraft, and more. Use the `pixara_list_image_models` tool to see the full, current models list from OpenRouter.
 
 ## Features
 
