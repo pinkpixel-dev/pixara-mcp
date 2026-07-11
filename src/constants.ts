@@ -5,7 +5,7 @@ export const IMAGE_MODELS_ENDPOINT = `${API_BASE_URL}/images/models`;
 export const CHARACTER_LIMIT = 25000;
 
 export const DEFAULT_OUTPUT_DIR =
-  process.env.OPENROUTER_IMAGE_OUTPUT_DIR || "./generated-images";
+  process.env.OPENROUTER_IMAGE_OUTPUT_DIR || "./pixara-images";
 
 export const REQUEST_TIMEOUT_MS = 120_000;
 

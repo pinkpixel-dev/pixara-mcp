@@ -13,7 +13,7 @@ import { registerGetModelDetailsTool } from "./tools/getModelDetails.js";
 
 const server = new McpServer({
   name: "pixara-mcp",
-  version: "1.0.0",
+  version: "1.0.1",
 });
 
 registerGenerateImageTool(server);

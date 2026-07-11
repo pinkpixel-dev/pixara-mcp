@@ -1,51 +1,71 @@
 # Pixara MCP Server
 
-An MCP server that gives Claude (or any MCP client) direct access to OpenRouter's Image API —
-generate images, edit/transform existing ones, and browse the model catalog, all through four
-tools.
+An MCP server that gives LLMs direct access to OpenRouter's Image API to generate images, edit/transform existing ones, and browse the model catalog, all through 4 tools.
 
-I built this because OpenRouter shipped a dedicated Image API (`/api/v1/images`, separate from
-chat completions) that gives you one endpoint in front of FLUX, GPT Image, Imagen, Stable
-Diffusion, Recraft, Ideogram, Midjourney, and more. There wasn't an MCP server for it yet, so
-here's one.
+I built this because I saw that OpenRouter announced a new Image API (`/api/v1/images`) that gives you one endpoint to use FLUX, GPT Image, Imagen, Stable Diffusion, Recraft, Ideogram, Midjourney, and more. I didn't see an MCP server for it so I decided to make one, and here it is.
 
 ## Features
 
 - **Generate images** from a text prompt against any OpenRouter image model
-- **Edit/transform images** (img2img) using a local file, a URL, or raw base64 as the reference — the tool reads and encodes local files for you
+- **Edit/transform images** (img2img) using a local file, a URL, or raw base64 as the reference, and the tool reads and encodes local files for you
 - **List models** with filtering by provider, name, and capability (img2img, streaming, transparent background), plus pagination
-- **Inspect a model's endpoint details** — per-provider pricing, supported parameters, and allowed passthrough options — before you spend a call on something it doesn't support
-- Generated images are decoded and saved to disk (not dumped into the conversation as base64), so responses stay small and you get a real file path back
-- Actionable error messages for the common failure modes: bad/conflicting params, invalid key, insufficient credits, rate limits, provider unavailable
+- **Inspect a model's endpoint details:** per-provider pricing, supported parameters, and allowed passthrough options — before you spend a call on something it doesn't support
+- Generated images are decoded and saved to disk, so responses stay small and a file path is returned
+- Clear error messages for common failure modes: bad/conflicting params, invalid key, insufficient credits, rate limits, provider unavailable
 
-Not included in this version: SSE streaming (progressive partial renders). OpenRouter supports
-it, but it doesn't map cleanly onto a single MCP tool call, so it's on the roadmap instead of
-in v1.
+## Quick start (recommended)
 
-## Installation
+Pixara is published on npm as [`@pinkpixel/pixara-mcp`](https://www.npmjs.com/package/@pinkpixel/pixara-mcp).
+The easiest way to use it is via `npx` — no install, no cloning, no build step. 
 
-Requires Node.js 18+.
+Add this to your MCP config (`claude_desktop_config.json`) for Claude Desktop, or your MCP client's .json config file:
 
-```bash
-npm install
-npm run build
+```json
+{
+  "mcpServers": {
+    "pixara": {
+      "command": "npx",
+      "args": ["-y", "@pinkpixel/pixara-mcp"],
+      "env": {
+        "OPENROUTER_API_KEY": "sk-or-v1-your-key-here",
+        "OPENROUTER_IMAGE_OUTPUT_DIR": "/absolute/path/to/wherever/you/want/images"
+      }
+    }
+  }
+}
 ```
 
-## Configuration
+Restart the client and you should see the four `pixara_*` tools available. `npx -y` fetches
+and caches the package on first run, so there's nothing to update manually. New versions get
+picked up automatically.
 
-Copy `.env.example` to `.env` (or set these in your MCP client's config, see below):
+## Configuration
 
 | Variable | Required | Description |
 |---|---|---|
 | `OPENROUTER_API_KEY` | Yes | Get one at [openrouter.ai/keys](https://openrouter.ai/keys) |
-| `OPENROUTER_IMAGE_OUTPUT_DIR` | No | Where generated images are saved. Defaults to `./generated-images` |
-| `OPENROUTER_SITE_URL` | No | Sent as `HTTP-Referer` — lets OpenRouter attribute traffic to your app |
-| `OPENROUTER_SITE_NAME` | No | Sent as `X-Title` — shows up in OpenRouter's rankings/dashboard |
+| `OPENROUTER_IMAGE_OUTPUT_DIR` | No | Where generated images are saved. Defaults to `./pixara-images` |
 
-## Using it with Claude Desktop / Claude Code
+The server just reads these from `process.env` — there's no `.env` file loading built in.
+Whether you're running via `npx` or from source, set these in the `env` block of your MCP
+config, as shown above. `OPENROUTER_IMAGE_OUTPUT_DIR` is optional — leave it out and images
+save to `./pixara-images` relative to wherever the server process runs; set it to an
+absolute path if you want a predictable location regardless of the client's working directory.
 
-Add this to your MCP config (`claude_desktop_config.json` for Desktop, or your Claude Code MCP
-settings):
+## Installing from source
+
+For local development, or if you'd rather not rely on `npx`:
+
+Requires Node.js 18+.
+
+```bash
+git clone https://github.com/sizzlebop/pixara-mcp.git
+cd pixara-mcp
+npm install
+npm run build
+```
+
+Then point your MCP config at the built file instead of `npx`:
 
 ```json
 {
@@ -54,14 +74,13 @@ settings):
       "command": "node",
       "args": ["/absolute/path/to/openrouter-image-mcp/dist/index.js"],
       "env": {
-        "OPENROUTER_API_KEY": "sk-or-v1-your-key-here"
+        "OPENROUTER_API_KEY": "sk-or-v1-your-key-here",
+        "OPENROUTER_IMAGE_OUTPUT_DIR": "/absolute/path/to/wherever/you/want/images"
       }
     }
   }
 }
 ```
-
-Restart the client and you should see the four `pixara_*` tools available.
 
 ## Tools
 
@@ -112,12 +131,6 @@ written as `.svg` regardless of what `output_format` was requested.
   trust `pixara_list_image_models`/`pixara_get_model_details` over any hardcoded list
 - This is new — OpenRouter's Image API has only been out a couple of weeks, so expect model
   IDs and params to shift over time
-
-## Project docs
-
-- [OVERVIEW.md](OVERVIEW.md) — technical reference for how the server is put together
-- [CHANGELOG.md](CHANGELOG.md) — what's changed release to release
-- [ROADMAP.md](ROADMAP.md) — what's planned next
 
 ## License
 
